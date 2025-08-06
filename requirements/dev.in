@@ -1,0 +1,14 @@
+# Development dependencies
+-r base.in
+
+# Testing
+pytest==8.3.2
+pytest-django==4.8.0
+factory-boy==3.3.0
+coverage==7.6.0
+
+# Code quality
+black==24.4.2
+flake8==7.1.0
+mypy==1.11.1
+django-stubs==5.0.4
