@@ -64,62 +64,95 @@ class Command(BaseCommand):
                 self.stdout.write(f'Created area: {area_name}')
 
     def create_rooms_and_desks(self):
-        """Creates ~90 rooms and ~90 desks with realistic IDs matching floor plans."""
-        desk_patterns = [
-            # Level 1 Left Wing
-            ("1", "L", ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"]),
-            # Level 1 Right Wing  
-            ("1", "R", ["16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"]),
-            # Level 2 Left Wing
-            ("2", "L", ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"]),
-            # Level 2 Right Wing
-            ("2", "R", ["16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"]),
-            # Level 3 Left Wing
-            ("3", "L", ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"]),
-            # Level 3 Right Wing
-            ("3", "R", ["16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"]),
+        """Creates ~30 rooms and ~90 desks with realistic distribution (6→30→90 hierarchy)."""
+        
+        # Define realistic room types and desk counts per area
+        room_types = [
+            {'name': 'Open Office A', 'desk_count': 6, 'type': 'open'},
+            {'name': 'Open Office B', 'desk_count': 4, 'type': 'open'},
+            {'name': 'Meeting Room', 'desk_count': 0, 'type': 'meeting'},
+            {'name': 'Individual Office 1', 'desk_count': 1, 'type': 'private'},
+            {'name': 'Individual Office 2', 'desk_count': 1, 'type': 'private'},
+            {'name': 'Shared Office', 'desk_count': 3, 'type': 'shared'},
         ]
-
-        for level, wing, room_numbers in desk_patterns:
-            # Get the area
-            area_name = f"Level {level} - {wing}eft Wing" if wing == "L" else f"Level {level} - Right Wing"
-            area = Area.objects.get(name=area_name)
+        
+        areas = Area.objects.all().order_by('name')
+        desk_counter = 1
+        
+        for area in areas:
+            level = area.name.split()[1]  # Extract "1", "2", "3"
+            wing = "L" if "Left" in area.name else "R"
             
-            for room_num in room_numbers:
-                # Create room
-                room_name = f"Office {level}.{wing}.{room_num}"
+            self.stdout.write(f'Creating rooms and desks for {area.name}')
+            
+            # Create 5 rooms per area (6 areas × 5 = 30 rooms total)
+            for i, room_config in enumerate(room_types[:5], 1):  # Take first 5 room types
+                room_name = f"{level}.{wing} - {room_config['name']}"
+                
                 room, created = Room.objects.get_or_create(
                     area=area,
                     name=room_name,
-                    defaults={'is_bookable': True}
+                    defaults={
+                        'is_bookable': room_config['type'] == 'meeting'
+                    }
                 )
                 
                 if created:
-                    # Create 1 desk per room (some rooms might have 2 in reality)
-                    desk_id = f"{level}.{wing}.{room_num}"
+                    # Create desks for this room
+                    desks_to_create = room_config['desk_count']
                     
-                    # Random coordinates for map positioning
-                    pos_x = random.randint(50, 800) if random.random() > 0.3 else None
-                    pos_y = random.randint(50, 600) if pos_x else None
+                    # Adjust desk count to reach exactly 90 total desks
+                    # (6 areas × 15 desks average = 90 desks)
+                    if area == areas.last() and i == 5:  # Last room of last area
+                        remaining_desks = 90 - (desk_counter - 1)
+                        desks_to_create = remaining_desks
                     
-                    # Random status distribution: 80% available, 15% permanent, 5% disabled
-                    status_choice = random.choices(
-                        ['available', 'permanent', 'disabled'],
-                        weights=[80, 15, 5]
-                    )[0]
+                    for desk_num in range(desks_to_create):
+                        desk_identifier = f"{level}.{wing}.{desk_counter:02d}"
+                        
+                        # Position calculation based on room type
+                        if room_config['type'] == 'open':
+                            # Open office - arranged in grid
+                            pos_x = 100 + (desk_num % 3) * 150
+                            pos_y = 100 + (desk_num // 3) * 100
+                        elif room_config['type'] == 'private':
+                            # Private office - center of room
+                            pos_x = 200
+                            pos_y = 150
+                        elif room_config['type'] == 'shared':
+                            # Shared office - around table
+                            pos_x = 150 + (desk_num * 80)
+                            pos_y = 120
+                        else:
+                            # Random positioning
+                            pos_x = random.randint(50, 400)
+                            pos_y = random.randint(50, 300)
+                        
+                        # Status distribution: 75% available, 20% permanent, 5% disabled
+                        status_choice = random.choices(
+                            ['available', 'permanent', 'disabled'],
+                            weights=[75, 20, 5]
+                        )[0]
+                        
+                        desk, desk_created = Desk.objects.get_or_create(
+                            room=room,
+                            identifier=desk_identifier,
+                            defaults={
+                                'status': status_choice,
+                                'pos_x': pos_x,
+                                'pos_y': pos_y
+                            }
+                        )
+                        
+                        if desk_created:
+                            desk_counter += 1
                     
-                    desk, desk_created = Desk.objects.get_or_create(
-                        room=room,
-                        identifier=desk_id,
-                        defaults={
-                            'status': status_choice,
-                            'pos_x': pos_x,
-                            'pos_y': pos_y
-                        }
-                    )
-                    
-                    if desk_created:
-                        self.stdout.write(f'Created room {room_name} with desk {desk_id}')
+                    if desks_to_create > 0:
+                        self.stdout.write(f'  Created {room_name} with {desks_to_create} desks')
+                    else:
+                        self.stdout.write(f'  Created {room_name} (meeting room, no desks)')
+        
+        self.stdout.write(f'Total desks created: {desk_counter - 1}')
 
     def create_users(self):
         """Creates 150 test employees with employee IDs EMP001-150 and departments."""
