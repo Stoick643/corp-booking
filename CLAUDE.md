@@ -38,6 +38,7 @@ python manage.py load_fixtures
 ### URLs
 - **API:** http://localhost:8000/api/
 - **Admin:** http://localhost:8000/admin/
+- **Frontend:** http://localhost:5173/ (Vue.js dev server)
 
 ## Development
 
@@ -116,7 +117,105 @@ GET /api/desks/                    # List all desks with room/area info
 
 # Reservations (Read-only for now)
 GET /api/reservations/             # List all reservations
+POST /api/reservations/            # Create new reservation
 ```
+
+## Vue.js Frontend
+
+### Setup and Development
+
+```bash
+# Navigate to frontend directory
+cd frontend/
+
+# Install dependencies
+npm install
+
+# Start development server (requires Django running on port 8000)
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### Frontend URLs
+- **Development:** http://localhost:5173/
+- **Areas View:** http://localhost:5173/
+- **Rooms View:** http://localhost:5173/areas/{id}
+- **Desks View:** http://localhost:5173/areas/{areaId}/rooms/{roomId}
+- **Booking:** http://localhost:5173/desks/{deskId}/book
+
+### Manual Testing Workflow
+
+1. **Start Backend:**
+   ```bash
+   # Terminal 1: Django API server
+   source venv/bin/activate
+   python manage.py runserver
+   ```
+
+2. **Start Frontend:**
+   ```bash
+   # Terminal 2: Vue.js dev server
+   cd frontend/
+   npm run dev
+   ```
+
+3. **Test Complete Booking Flow:**
+   - Navigate to http://localhost:5173/
+   - Click on any office area (e.g., "Level 1 - Left Wing")
+   - Select a room with available desks
+   - Click on an available (green) desk
+   - Fill out the booking form and submit
+   - Verify booking success modal appears
+
+### Frontend Architecture
+
+```
+frontend/
+├── src/
+│   ├── components/           # Reusable Vue components
+│   │   ├── NavigationBar.vue    # Top navigation with breadcrumbs
+│   │   ├── AreaCard.vue         # Individual area display
+│   │   ├── RoomCard.vue         # Individual room display  
+│   │   ├── DeskCard.vue         # Individual desk display
+│   │   └── BookingForm.vue      # Reservation form
+│   ├── views/               # Page-level components
+│   │   ├── AreasView.vue        # Areas list page
+│   │   ├── RoomsView.vue        # Rooms list page
+│   │   ├── DesksView.vue        # Desks list page
+│   │   └── BookingView.vue      # Booking form page
+│   ├── services/           # API integration
+│   │   └── api.js              # Axios HTTP client for Django API
+│   ├── stores/             # State management
+│   │   └── booking.js          # Reactive store for app state
+│   ├── router/             # Vue Router configuration
+│   │   └── index.js            # Route definitions
+│   └── styles/             # Global styles
+│       └── main.css            # Bootstrap overrides and custom CSS
+├── package.json            # Dependencies and scripts
+├── vite.config.js         # Vite dev server configuration
+└── index.html             # Main HTML template
+```
+
+### Key Features Implemented
+
+- **Responsive Design:** Bootstrap 5 with mobile-first approach
+- **Real-time Navigation:** Vue Router with breadcrumb navigation  
+- **API Integration:** Axios client consuming Django REST API
+- **Form Validation:** Client-side validation with error handling
+- **Loading States:** Spinners and loading indicators
+- **Error Handling:** Global error display with user-friendly messages
+- **Status Filtering:** Filter desks by availability status
+- **Booking Workflow:** Complete end-to-end reservation process
+
+### Test Data Available
+
+- **6 Office Areas:** Level 1-3, Left/Right Wings
+- **30 Rooms:** 5 rooms per area (Open Office, Meeting, Private, Shared)
+- **90 Desks:** 66 available, 19 permanent, 5 disabled
+- **150 Users:** Realistic employee data with departments
+- **126 Sample Reservations:** Historical booking data for testing
 
 ## Business Rules
 
@@ -128,10 +227,10 @@ GET /api/reservations/             # List all reservations
 ## Technology Stack
 
 - **Backend:** Django 5.0.7 + Django REST Framework
-- **Frontend:** Vue.js 3 (planned)
+- **Frontend:** Vue.js 3 + Vite + Bootstrap 5
 - **Database:** SQLite (dev) / PostgreSQL (prod)
-- **Real-time:** Django Channels
-- **Deployment:** Render.com
+- **Real-time:** Django Channels (planned)
+- **Deployment:** Render.com (planned)
 
 ## Project Structure
 
@@ -140,6 +239,10 @@ booking/
 ├── core/                  # Models, admin
 ├── booking_api/          # REST API endpoints  
 ├── booking_system/       # Django settings
+├── frontend/             # Vue.js 3 frontend application
+│   ├── src/             # Vue.js source code
+│   ├── package.json     # Node.js dependencies
+│   └── vite.config.js   # Vite configuration
 ├── requirements/         # pip-tools dependencies
 ├── media/               # Uploaded files (SVG floor plans)
 ├── docs/                # SRS and floor plan images

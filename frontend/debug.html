@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Debug Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Corporate Booking API Debug</h1>
+    <div id="result"></div>
+    <button onclick="testAPI()">Test API Connection</button>
+    
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing API...';
+            
+            try {
+                console.log('Making API call to http://localhost:8000/api/areas/');
+                const response = await axios.get('http://localhost:8000/api/areas/');
+                console.log('API Response:', response.data);
+                
+                resultDiv.innerHTML = `
+                    <h3>✅ API Success!</h3>
+                    <p>Found ${response.data.length} areas</p>
+                    <pre>${JSON.stringify(response.data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('API Error:', error);
+                resultDiv.innerHTML = `
+                    <h3>❌ API Error</h3>
+                    <p>Error: ${error.message}</p>
+                    <p>Status: ${error.response?.status}</p>
+                    <pre>${JSON.stringify(error.response?.data, null, 2)}</pre>
+                `;
+            }
+        }
+        
+        // Auto-test on page load
+        window.onload = testAPI;
+    </script>
+</body>
+</html>
