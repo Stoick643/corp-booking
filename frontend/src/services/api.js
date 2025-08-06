@@ -107,6 +107,20 @@ export const apiService = {
   async deleteReservation(reservationId) {
     const response = await api.delete(`/reservations/${reservationId}/`)
     return response.data
+  },
+
+  // Quick booking - one-click desk reservation
+  async createQuickReservation(deskId, date) {
+    // Format date as YYYY-MM-DD string
+    const dateStr = date instanceof Date ? 
+      date.toISOString().split('T')[0] : 
+      date
+      
+    const response = await api.post('/reservations/quick_book/', {
+      desk_id: deskId,
+      date: dateStr
+    })
+    return response.data
   }
 }
 

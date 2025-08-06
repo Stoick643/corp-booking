@@ -396,8 +396,8 @@ export default {
     // Event handlers
     const handleDeskClick = (desk) => {
       if (desk.status === 'available') {
-        console.log('DesksViewFixed: Navigating to booking for desk:', desk.id)
-        router.push(`/desks/${desk.id}/book`)
+        console.log('DesksViewFixed: One-click booking not available in room view')
+        alert('💡 Tip: For one-click booking, use the Area Workspace view instead!\n\nGo to Areas → Select Area → View all desks with instant booking.')
       }
     }
 

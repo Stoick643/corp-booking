@@ -5,10 +5,10 @@
       <div class="col-12">
         <h1 class="h3 mb-2">
           <i class="bi bi-building me-2"></i>
-          Office Areas
+          Workspace Booking
         </h1>
         <p class="text-muted">
-          Select an office area to browse available rooms and desks for booking.
+          Select an office area to view available desks for booking.
         </p>
       </div>
     </div>
@@ -37,7 +37,7 @@
         :key="area.id"
         class="col-12 col-md-6 col-lg-4"
       >
-        <div class="card h-100 area-card" @click="navigateToRooms(area.id)">
+        <div class="card h-100 area-card" @click="navigateToAreaDesks(area.id)">
           <!-- Card Header with Area Name -->
           <div class="card-header bg-primary text-white">
             <h5 class="card-title mb-0">
@@ -147,10 +147,10 @@ export default {
       }
     }
 
-    // Navigation handler (NO STORE DEPENDENCY)
-    const navigateToRooms = (areaId) => {
-      console.log('AreasViewFixed: Navigating to area:', areaId)
-      router.push(`/areas/${areaId}`)
+    // Navigation handler - direct to area desks (NO STORE DEPENDENCY)
+    const navigateToAreaDesks = (areaId) => {
+      console.log('AreasViewFixed: Navigating to area desks:', areaId)
+      router.push(`/areas/${areaId}/desks`)
     }
 
     // Initialize component
@@ -166,7 +166,7 @@ export default {
       totalRooms,
       totalDesks,
       loadAreas,
-      navigateToRooms
+      navigateToAreaDesks
     }
   }
 }

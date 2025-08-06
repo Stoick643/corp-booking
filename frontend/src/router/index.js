@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AreasView from '../views/AreasView.vue'
 import AreasViewFixed from '../views/AreasViewFixed.vue'
+import AreaWorkspaceView from '../views/AreaWorkspaceView.vue'
 import RoomsView from '../views/RoomsView.vue'
 import RoomsViewFixed from '../views/RoomsViewFixed.vue'
 import DesksView from '../views/DesksView.vue'
 import DesksViewFixed from '../views/DesksViewFixed.vue'
-import BookingView from '../views/BookingView.vue'
 import SimpleTest from '../views/SimpleTest.vue'
 
 const routes = [
@@ -37,6 +37,16 @@ const routes = [
     }
   },
   {
+    path: '/areas/:areaId/desks',
+    name: 'area-desks',
+    component: AreaWorkspaceView,
+    props: true,
+    meta: { 
+      title: 'Area Desks',
+      breadcrumb: 'Desks'
+    }
+  },
+  {
     path: '/areas/:areaId',
     name: 'rooms',
     component: RoomsViewFixed,
@@ -54,16 +64,6 @@ const routes = [
     meta: { 
       title: 'Desks',
       breadcrumb: 'Desks'
-    }
-  },
-  {
-    path: '/desks/:deskId/book',
-    name: 'booking',
-    component: BookingView,
-    props: true,
-    meta: { 
-      title: 'Book Desk',
-      breadcrumb: 'Book Desk'
     }
   },
   {
